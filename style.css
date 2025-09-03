@@ -15,7 +15,7 @@ button:active { transform: translateY(1px); }
   gap: 6px; 
   justify-content:center;
 }
-.tile { width: 42px; height: 42px; border-radius: 10px; border: 2px solid rgba(255,255,255,0.15); display:flex; align-items:center; justify-content:center; font-weight:700; color:#0f1220; user-select:none; }
+.tile { width: 42px; height: 42px; border-radius: 10px; border: 2px solid rgba(255,255,255,0.15); display:flex; align-items:center; justify-content:center; font-weight:700; color:#0f1220; user-select:none; transition: transform 200ms cubic-bezier(0.22, 0.61, 0.36, 1); will-change: transform; }
 .tile.sel { outline: 3px solid #fff; }
 
 /* Disappearance animation for matched tiles */

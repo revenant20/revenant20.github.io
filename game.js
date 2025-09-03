@@ -49,17 +49,9 @@
     }
     // If clicked same - unselect
     if (selected.r===r && selected.c===c){ selected=null; render(); return; }
-    // If adjacent - try swap
+    // If adjacent - try animated swap
     if (isAdjacent(selected, {r,c})){
-      swap(selected, {r,c});
-      if (!hasAnyMatch()){ // invalid move, revert
-        swap(selected, {r,c});
-        selected = null;
-        render();
-      } else {
-        selected = null;
-        stepResolve();
-      }
+      animateSwap(selected, {r,c});
     } else {
       // select new
       selected = {r,c};
@@ -74,6 +66,86 @@
     const t = grid[a.r][a.c];
     grid[a.r][a.c] = grid[b.r][b.c];
     grid[b.r][b.c] = t;
+  }
+
+  // Smoothly animate swapping two adjacent tiles using CSS transforms
+  function animateSwap(a, b){
+    if (isAnimating) return;
+    const selA = `.tile[data-r="${a.r}"][data-c="${a.c}"]`;
+    const selB = `.tile[data-r="${b.r}"][data-c="${b.c}"]`;
+    const elA = boardEl.querySelector(selA);
+    const elB = boardEl.querySelector(selB);
+
+    // Fallback to instant swap if elements not found
+    if (!elA || !elB){
+      swap(a,b);
+      if (!hasAnyMatch()){
+        swap(a,b);
+        selected = null;
+        render();
+      } else {
+        selected = null;
+        stepResolve();
+      }
+      return;
+    }
+
+    isAnimating = true;
+
+    const ra = elA.getBoundingClientRect();
+    const rb = elB.getBoundingClientRect();
+    const dx = rb.left - ra.left;
+    const dy = rb.top - ra.top;
+
+    // Bring tiles to front during animation
+    elA.style.zIndex = '2';
+    elB.style.zIndex = '2';
+
+    // Start animation: move each tile towards the other's position
+    elA.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
+    elB.style.transform = `translate3d(${-dx}px, ${-dy}px, 0)`;
+
+    let firstPhaseDone = 0;
+    const onFirstEnd = () => {
+      firstPhaseDone++;
+      if (firstPhaseDone < 2) return;
+
+      // After visual swap finishes, check if it creates a match
+      swap(a,b);
+      if (!hasAnyMatch()){
+        // Invalid move: animate back to original places
+        swap(a,b); // revert state back
+        let backDone = 0;
+        const onBackEnd = () => {
+          backDone++;
+          if (backDone < 2) return;
+          // Cleanup
+          elA.style.zIndex = '';
+          elB.style.zIndex = '';
+          elA.style.transform = '';
+          elB.style.transform = '';
+          isAnimating = false;
+          selected = null;
+          render();
+        };
+        // Trigger reverse
+        requestAnimationFrame(() => {
+          elA.style.transform = '';
+          elB.style.transform = '';
+          elA.addEventListener('transitionend', onBackEnd, { once: true });
+          elB.addEventListener('transitionend', onBackEnd, { once: true });
+        });
+      } else {
+        // Valid move: commit and proceed to resolution
+        // Do not reset transforms here to avoid visual snap-back; render() will recreate nodes
+        selected = null;
+        isAnimating = false;
+        stepResolve();
+      }
+    };
+
+    elA.addEventListener('transitionend', onFirstEnd, { once: true });
+    elB.addEventListener('transitionend', onFirstEnd, { once: true });
   }
 
   function findMatches(){
