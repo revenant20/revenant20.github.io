@@ -1,0 +1,33 @@
+* { box-sizing: border-box; }
+body { margin: 0; font-family: -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; background:#0f1220; color:#fff; }
+.app { max-width: 480px; margin: 0 auto; padding: 12px; }
+header { display:flex; align-items:center; justify-content:space-between; }
+h1 { font-size: 20px; margin: 8px 0; }
+.meta { display:flex; align-items:center; gap:12px; }
+button { background:#2f80ed; border:none; color:#fff; padding:8px 12px; border-radius:8px; font-weight:600; cursor:pointer; }
+button:active { transform: translateY(1px); }
+
+.board { 
+  margin-top: 12px; 
+  display: grid; 
+  grid-template-columns: repeat(8, 42px); 
+  grid-template-rows: repeat(8, 42px);
+  gap: 6px; 
+  justify-content:center;
+}
+.tile { width: 42px; height: 42px; border-radius: 10px; border: 2px solid rgba(255,255,255,0.15); display:flex; align-items:center; justify-content:center; font-weight:700; color:#0f1220; user-select:none; }
+.tile.sel { outline: 3px solid #fff; }
+
+/* Disappearance animation for matched tiles */
+.tile.vanish { animation: vanish 220ms ease-out forwards; }
+@keyframes vanish { to { transform: scale(0.2); opacity: 0; } }
+
+/* 6 colors */
+.c0 { background: #ff6b6b; }
+.c1 { background: #feca57; }
+.c2 { background: #48dbfb; }
+.c3 { background: #1dd1a1; }
+.c4 { background: #a29bfe; }
+.c5 { background: #ff9ff3; }
+
+footer { text-align:center; opacity: .7; margin-top: 12px; font-size: 12px; }
